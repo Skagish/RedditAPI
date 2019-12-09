@@ -7,7 +7,7 @@ namespace _Reddit_API.Client
 {
     public class Client
     {
-        string client_id = "Skagish";
+        string client_id = "uCVrtPfI3OOkyQ";
         string client_secret = "EYfI97NNVmMRXncS9NyYGPnAsUg";
     }
 }
