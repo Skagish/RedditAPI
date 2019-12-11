@@ -26,12 +26,12 @@ namespace _Reddit_API.Controllers
 
         [HttpGet]
         [Route("api/Client/GetTopThreads")]
-        public async Task<List<Product>> GetTopThreads()
+        public async Task<List<EndProduct>> GetTopThreads()
         {
             var token = await GetToken();
             var threads = await GetThreadsAsync(token);
             var comments = await GetCommentsAsync(token, threads);
-            var products = await ReturnProducts(comments);
+            var products = ReturnProducts(comments);
             return products;
         }
 
@@ -152,11 +152,19 @@ namespace _Reddit_API.Controllers
             }
         }
 
-        public async Task<List<Product>> ReturnProducts(List<Product> list)
+        public List<EndProduct> ReturnProducts(List<Product> list)
         {
             try
             {
-                return list;
+                List<EndProduct> endProducts = new List<EndProduct>();
+                for (int i = 0; i < 5; i++)
+                {
+                    var endProduct = new EndProduct();
+                    endProduct.Title = list[i].Title;
+                    endProduct.Comments = list[i].Comments;
+                    endProducts.Add(endProduct);
+                }
+                return endProducts;
             }
             catch (Exception)
             {
