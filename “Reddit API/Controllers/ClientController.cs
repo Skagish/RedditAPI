@@ -1,20 +1,11 @@
-﻿using _Reddit_API.Client;
-using _Reddit_API.Models;
+﻿using _Reddit_API.Models;
 using IdentityModel.Client;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using RestSharp;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -22,7 +13,11 @@ namespace _Reddit_API.Controllers
 {
     public class ClientController : ApiController
     {
-        private static readonly XmlObjectSerializer Serializer = new DataContractJsonSerializer(typeof(Thread));
+        public ClientController()
+        {
+         
+        }
+
         // GET: api/Client
         public IEnumerable<string> Get()
         {
@@ -31,11 +26,13 @@ namespace _Reddit_API.Controllers
 
         [HttpGet]
         [Route("api/Client/GetTopThreads")]
-        public async Task<HttpResponseMessage> GetTopThreads()
+        public async Task<string> GetTopThreads()
         {
             var token = await GetToken();
-            var threads = GetThreadsAsync(token);
-            return await threads;
+            var threads = await GetThreadsAsync(token);
+            var comments = await GetCommentsAsync(token, threads);
+            var products = await ReturnProducts(comments);
+            return products;
         }
 
         [HttpPost]
@@ -78,40 +75,93 @@ namespace _Reddit_API.Controllers
             }
         }
 
-        public async Task<HttpResponseMessage> GetThreadsAsync(string token)
+        public async Task<ICollection<Product>> GetThreadsAsync(string token)
         {
-            var threadLink = "https://oauth.reddit.com/best.json?limit=5";
-            var commentLink = "https://oauth.reddit.com/r/pics/comments.json?limit=2";
-            var list = new List<Thread>();
+            try
+            {
+                var threadLink = "https://oauth.reddit.com/best.json?limit=5&show=title";
+                var threads = new List<Product>();
 
-            var client = new HttpClient();
-            client.SetBearerToken(token);
-            
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, threadLink);
-            request.Headers.UserAgent.ParseAdd("Reddit API" + token);
-            HttpResponseMessage response = await client.SendAsync(request);
-
-            
-
+                var client = new HttpClient();
+                client.SetBearerToken(token);
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, threadLink);
+                request.Headers.UserAgent.ParseAdd("Reddit API" + token);
+                HttpResponseMessage response = await client.SendAsync(request);
+                var resString = response.Content.ReadAsStringAsync().Result;
 
 
-            return response;
+
+                Listing deserializedReddit = JsonConvert.DeserializeObject<Listing>(resString);
+                foreach (var thread in deserializedReddit.ListingData.Threads)
+                {
+                    var newProduct = new Product();
+                    newProduct.Title = thread.Data.Title;
+                    newProduct.Subreddit = thread.Data.Subreddit;
+                    threads.Add(newProduct);
+                }
+
+                return threads;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
-        /*public async Task<ICollection<string>> GetComments(List<Thread> threadList)
+        public async Task<List<Product>> GetCommentsAsync(string token, ICollection<Product> list)
         {
-            for (int i = 0; i < threadList.Count; i++)
+            try
             {
-                var commentLink = "https://oauth.reddit.com/r/{subreddit}/comments/{thread_id";
                 var client = new HttpClient();
-                var newToken = await GetToken();
-                client.SetBearerToken(newToken);
+                client.SetBearerToken(token);
 
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, commentLink);
-                request.Headers.UserAgent.ParseAdd("Reddit API" + newToken);
-                HttpResponseMessage response = await client.SendAsync(request);
+                var results = new List<Product>();
+
+                foreach (var thread in list)
+                {
+                    string subreddit = thread.Subreddit;
+                    var commentLink = $"https://oauth.reddit.com/r/{subreddit}/comments.json?limit=5";
+
+                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, commentLink);
+                    request.Headers.UserAgent.ParseAdd("Reddit API" + token);
+                    HttpResponseMessage response = await client.SendAsync(request);
+
+                    var resString = response.Content.ReadAsStringAsync().Result;
+                    ListingComments deserializedReddit = JsonConvert.DeserializeObject<ListingComments>(resString);
+                    var th = new Product();
+                    foreach (var comment in deserializedReddit.ListingData.Threads)
+                    {
+                        var com = new Comments();
+                        com.Comment = comment.Data.Body;
+                        th.Title = thread.Title.ToString();
+                        th.Comments.Add(com);
+                    }
+                    results.Add(thread);
+                }
+                return results;
             }
-        }*/
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task<string> ReturnProducts(List<Product> list)
+        {
+            try
+            {
+                string output = JsonConvert.SerializeObject(list);
+
+                return output;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
     }
 }
 
