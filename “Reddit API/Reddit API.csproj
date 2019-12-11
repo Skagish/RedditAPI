@@ -211,6 +211,7 @@
     <Compile Include="Models\CommentTree\ListingCommentData.cs" />
     <Compile Include="Models\CommentTree\Comment.cs" />
     <Compile Include="Models\CommentTree\CommentData.cs" />
+    <Compile Include="Models\EndProduct.cs" />
     <Compile Include="Models\ThreadingTree\ListingData.cs" />
     <Compile Include="Models\ThreadingTree\Listing.cs" />
     <Compile Include="Models\Product.cs" />

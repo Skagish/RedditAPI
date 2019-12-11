@@ -26,7 +26,7 @@ namespace _Reddit_API.Controllers
 
         [HttpGet]
         [Route("api/Client/GetTopThreads")]
-        public async Task<string> GetTopThreads()
+        public async Task<List<Product>> GetTopThreads()
         {
             var token = await GetToken();
             var threads = await GetThreadsAsync(token);
@@ -129,15 +129,19 @@ namespace _Reddit_API.Controllers
 
                     var resString = response.Content.ReadAsStringAsync().Result;
                     ListingComments deserializedReddit = JsonConvert.DeserializeObject<ListingComments>(resString);
+
+                    ICollection<Comments> coment = new List<Comments>();
                     var th = new Product();
+                    th.Title = thread.Title.ToString();
+
                     foreach (var comment in deserializedReddit.ListingData.Threads)
                     {
                         var com = new Comments();
                         com.Comment = comment.Data.Body;
-                        th.Title = thread.Title.ToString();
-                        th.Comments.Add(com);
+                        coment.Add(com);
                     }
-                    results.Add(thread);
+                    th.Comments = coment;
+                    results.Add(th);
                 }
                 return results;
             }
@@ -148,13 +152,11 @@ namespace _Reddit_API.Controllers
             }
         }
 
-        public async Task<string> ReturnProducts(List<Product> list)
+        public async Task<List<Product>> ReturnProducts(List<Product> list)
         {
             try
             {
-                string output = JsonConvert.SerializeObject(list);
-
-                return output;
+                return list;
             }
             catch (Exception)
             {
