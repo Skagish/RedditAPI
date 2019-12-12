@@ -13,11 +13,6 @@ namespace Reddit_API.Controllers
 {
     public class ClientController : Controller
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
-
         [HttpGet]
         public async Task<ThreadWrapper> GetTopThreads()
         {
@@ -28,60 +23,36 @@ namespace Reddit_API.Controllers
             return products;
         }
 
-        [HttpPost]
-        [Route("api/Client/callback")]
-        public bool TokenReceiver(TokenResponse tokenResponse)
+        private async Task<string> GetToken()
         {
-            var token = tokenResponse.AccessToken;
-            if (token != null)
+            using var client = new HttpClient();
+            var response = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
             {
-                return true;
-            }
-            return false;
+                Address = "https://www.reddit.com/api/v1/access_token",
+                ClientCredentialStyle = ClientCredentialStyle.AuthorizationHeader,
+                ClientId = "uCVrtPfI3OOkyQ",
+                ClientSecret = "EYfI97NNVmMRXncS9NyYGPnAsUg",
+                GrantType = "client_credentials",
+                Scope = "read"
+            });
+            if (response.IsError) throw new Exception(response.Error);
+            var token = response.AccessToken;
+            return token;
         }
 
-        public async Task<string> GetToken()
+        private async Task<ICollection<Product>> GetThreadsAsync(string token)
         {
             try
             {
-                var client = new HttpClient();
-                var response = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
-                {
-                    Address = "https://www.reddit.com/api/v1/access_token",
-                    ClientCredentialStyle = ClientCredentialStyle.AuthorizationHeader,
-                    ClientId = "uCVrtPfI3OOkyQ",
-                    ClientSecret = "EYfI97NNVmMRXncS9NyYGPnAsUg",
-                    GrantType = "client_credentials",
-                    Scope = "read"
-                });
-                var respContent = await response.HttpResponse.Content.ReadAsStringAsync();
-                if (response.IsError) throw new Exception(response.Error);
-                var token = response.AccessToken;
-
-                return token;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task<ICollection<Product>> GetThreadsAsync(string token)
-        {
-            try
-            {
+                using var client = new HttpClient();
                 var threadLink = "https://oauth.reddit.com/best.json?limit=5";
                 var threads = new List<Product>();
 
-                var client = new HttpClient();
                 client.SetBearerToken(token);
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, threadLink);
                 request.Headers.UserAgent.ParseAdd("Reddit API" + token);
                 HttpResponseMessage response = await client.SendAsync(request);
                 var resString = response.Content.ReadAsStringAsync().Result;
-
-
-
                 Listing deserializedReddit = JsonConvert.DeserializeObject<Listing>(resString);
                 foreach (var thread in deserializedReddit.ListingData.Threads)
                 {
@@ -98,11 +69,11 @@ namespace Reddit_API.Controllers
             }
         }
 
-        public async Task<List<Product>> GetCommentsAsync(string token, ICollection<Product> list)
+        private async Task<List<Product>> GetCommentsAsync(string token, ICollection<Product> list)
         {
             try
             {
-                var client = new HttpClient();
+                using var client = new HttpClient();
                 client.SetBearerToken(token);
 
                 var results = new List<Product>();
@@ -127,7 +98,7 @@ namespace Reddit_API.Controllers
                     {
                         var com = new Comments();
                         com.Comment = comment.Data.Body;
-                        
+
                         coment.Add(com);
                     }
                     th.Comments = coment;
@@ -137,12 +108,11 @@ namespace Reddit_API.Controllers
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
 
-        public ThreadWrapper ReturnProducts(List<Product> list)
+        private ThreadWrapper ReturnProducts(List<Product> list)
         {
             try
             {
@@ -173,6 +143,5 @@ namespace Reddit_API.Controllers
                 throw;
             }
         }
-
     }
 }
