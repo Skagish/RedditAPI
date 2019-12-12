@@ -217,6 +217,7 @@
     <Compile Include="Models\Product.cs" />
     <Compile Include="Models\ThreadingTree\Thread.cs" />
     <Compile Include="Models\ThreadingTree\ThreadData.cs" />
+    <Compile Include="Models\ThreadWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,11 +1,12 @@
 ﻿using _Reddit_API.Models;
 using IdentityModel.Client;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
+using System.Net.Http.Formatting;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -15,7 +16,6 @@ namespace _Reddit_API.Controllers
     {
         public ClientController()
         {
-         
         }
 
         // GET: api/Client
@@ -26,7 +26,7 @@ namespace _Reddit_API.Controllers
 
         [HttpGet]
         [Route("api/Client/GetTopThreads")]
-        public async Task<List<EndProduct>> GetTopThreads()
+        public async Task<ThreadWrapper> GetTopThreads()
         {
             var token = await GetToken();
             var threads = await GetThreadsAsync(token);
@@ -52,7 +52,6 @@ namespace _Reddit_API.Controllers
             try
             {
                 var client = new HttpClient();
-
                 var response = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
                 {
                     Address = "https://www.reddit.com/api/v1/access_token",
@@ -64,9 +63,8 @@ namespace _Reddit_API.Controllers
                 });
                 var respContent = await response.HttpResponse.Content.ReadAsStringAsync();
                 if (response.IsError) throw new Exception(response.Error);
-
                 var token = response.AccessToken;
-                //var custom = response.Json.TryGetString("title");
+
                 return token;
             }
             catch (Exception)
@@ -79,7 +77,7 @@ namespace _Reddit_API.Controllers
         {
             try
             {
-                var threadLink = "https://oauth.reddit.com/best.json?limit=5&show=title";
+                var threadLink = "https://oauth.reddit.com/best.json?limit=5";
                 var threads = new List<Product>();
 
                 var client = new HttpClient();
@@ -99,12 +97,10 @@ namespace _Reddit_API.Controllers
                     newProduct.Subreddit = thread.Data.Subreddit;
                     threads.Add(newProduct);
                 }
-
                 return threads;
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
@@ -152,7 +148,7 @@ namespace _Reddit_API.Controllers
             }
         }
 
-        public List<EndProduct> ReturnProducts(List<Product> list)
+        public ThreadWrapper ReturnProducts(List<Product> list)
         {
             try
             {
@@ -164,11 +160,18 @@ namespace _Reddit_API.Controllers
                     endProduct.Comments = list[i].Comments;
                     endProducts.Add(endProduct);
                 }
-                return endProducts;
+
+                var result = new ThreadWrapper();
+                var results = new List<EndProduct>();
+                foreach (var product in endProducts)
+                {
+                    results.Add(product);
+                }
+                result.Threads = results;
+                return result;
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
