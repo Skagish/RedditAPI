@@ -1,4 +1,4 @@
-﻿namespace Reddit_API.Models
+﻿namespace RedditApi.Models
 {
     public class ErrorViewModel
     {

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Reddit_API.Models.CommentTree
+namespace RedditApi.Models.CommentTree
 {
     public class ListingComments
     {

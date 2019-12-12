@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Reddit_API.Models.ThreadingTree
+namespace RedditApi.Models.ThreadingTree
 {
     public class Listing
     {

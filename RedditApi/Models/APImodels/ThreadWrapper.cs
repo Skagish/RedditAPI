@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Reddit_API.Models
+namespace RedditApi.Models
 {
     public class ThreadWrapper
     {

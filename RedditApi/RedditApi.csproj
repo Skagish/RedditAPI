@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>Reddit_API</RootNamespace>
+    <RootNamespace>RedditApi</RootNamespace>
+    <AssemblyName>RedditApi</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

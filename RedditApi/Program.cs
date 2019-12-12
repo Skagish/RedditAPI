@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace Reddit_API
+namespace RedditApi
 {
     public class Program
     {

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Reddit_API.Models
+namespace RedditApi.Models
 {
     public class Comments
     {

@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Reddit_API.Models;
-using Reddit_API.Models.CommentTree;
-using Reddit_API.Models.ThreadingTree;
+using RedditApi.Models;
+using RedditApi.Models.CommentTree;
+using RedditApi.Models.ThreadingTree;
 
-namespace Reddit_API.Controllers
+namespace RedditApi.Controllers
 {
     public class ClientController : Controller
     {
