@@ -6,6 +6,6 @@ namespace RedditApi.Models
     public class ThreadWrapper
     {
         [JsonProperty(PropertyName = "threads")]
-        public ICollection<EndProduct> Threads { get; set; }
+        public List<EndProduct> Threads { get; set; }
     }
 }
