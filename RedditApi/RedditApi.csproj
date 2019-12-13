@@ -14,6 +14,11 @@
     <PackageReference Include="MongoDB.Driver" Version="2.10.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\RedditApi.data\RedditApi.data.csproj" />
+    <ProjectReference Include="..\RedditApi.services\RedditApi.services.csproj" />
+  </ItemGroup>
+
 
 
 </Project>

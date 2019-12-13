@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using RedditApi.core.Interfaces.IServices;
 using RedditApi.Models.IRepo;
 using RedditApi.Repositories;
 using RedditApi.Services;
@@ -31,6 +32,7 @@ namespace RedditApi
 
             services.AddSingleton<ThreadService>();
             services.AddTransient<IThreadRepository, ThreadRepository>();
+            services.AddTransient<IThreadService, ThreadService>();
             services.AddControllersWithViews();
 
         }

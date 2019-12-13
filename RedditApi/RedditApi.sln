@@ -5,6 +5,12 @@ VisualStudioVersion = 16.0.29519.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditApi", "RedditApi.csproj", "{384B7E23-E8A9-40E4-874F-F2E109A3F751}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditApi.core", "..\RedditApi.Core\RedditApi.core.csproj", "{279B4C55-A5F1-482F-8118-890BDEA82F54}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditApi.data", "..\RedditApi.data\RedditApi.data.csproj", "{5901C20A-50C7-40EC-B588-55082FBC1079}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditApi.services", "..\RedditApi.services\RedditApi.services.csproj", "{84FFBB8F-C436-42FB-AEB8-88857772F51F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +21,18 @@ Global
 		{384B7E23-E8A9-40E4-874F-F2E109A3F751}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{384B7E23-E8A9-40E4-874F-F2E109A3F751}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{384B7E23-E8A9-40E4-874F-F2E109A3F751}.Release|Any CPU.Build.0 = Release|Any CPU
+		{279B4C55-A5F1-482F-8118-890BDEA82F54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{279B4C55-A5F1-482F-8118-890BDEA82F54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{279B4C55-A5F1-482F-8118-890BDEA82F54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{279B4C55-A5F1-482F-8118-890BDEA82F54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5901C20A-50C7-40EC-B588-55082FBC1079}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5901C20A-50C7-40EC-B588-55082FBC1079}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5901C20A-50C7-40EC-B588-55082FBC1079}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5901C20A-50C7-40EC-B588-55082FBC1079}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84FFBB8F-C436-42FB-AEB8-88857772F51F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84FFBB8F-C436-42FB-AEB8-88857772F51F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84FFBB8F-C436-42FB-AEB8-88857772F51F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84FFBB8F-C436-42FB-AEB8-88857772F51F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

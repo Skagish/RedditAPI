@@ -1,27 +1,118 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-using IdentityModel.Client;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+﻿using RedditApi.core.Interfaces.IServices;
 using RedditApi.Models;
-using RedditApi.Models.CommentTree;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using RedditApi.Repositories;
+using RedditApi.Models.BsonModels;
+using System;
+using System.Net.Http;
+using IdentityModel.Client;
 using RedditApi.Models.ThreadingTree;
-using RedditApi.Services;
+using Newtonsoft.Json;
+using RedditApi.Models.CommentTree;
 
-namespace RedditApi.Controllers
+namespace RedditApi.Services
 {
-    public class ClientController : Controller
+    public class ThreadService : IThreadService
     {
-        private readonly ThreadService _threadService;
-        public ClientController(ThreadService threadService)
+        private readonly IThreadRepository _threadRepo;
+
+        public ThreadService(IThreadRepository threadRepository)
         {
-            _threadService = threadService;
+            _threadRepo = threadRepository;
+        }
+        public async void AddThreads()
+        {
+            try
+            {
+                if (await ThreadExists())
+                {
+                    await _threadRepo.RemoveThreads("1");
+                }
+
+                var json = await GetTopThreads();
+                var bson = new ThreadsInBsonWrapper();
+                var bsonList = new List<ThreadsInBson>();
+
+                for (int i = 0; i < 5; i++)
+                {
+                    var wrap = new ThreadsInBson();
+                    wrap.Title = json.threadWrapper.Threads[i].Title;
+                    wrap.Comments = json.threadWrapper.Threads[i].Comments;
+                    bsonList.Add(wrap);
+                }
+                bson.Id = "1";
+                bson.ThreadsInBson = bsonList;
+                await _threadRepo.AddThreads(bson);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
-        [HttpGet]
-        public async Task<ThreadWrapper> GetTopThreads()
+        public void Delete(string id)
+        {
+            _threadRepo.RemoveThreads(id);
+        }
+
+        public async Task<List<ThreadWrapper>> GetAllThreads()
+        {
+            var bsonList = await _threadRepo.GetAllThreads();
+            var jsonList = new List<Threads>();
+            var jsonThList = new List<ThreadWrapper>();
+
+            for (int i = 0; i < bsonList.Count; i++)
+            {
+                var json = new Threads();
+                var th = new ThreadWrapper();
+                var epList = new List<EndProduct>();
+                for (int j = 0; j < bsonList[i].ThreadsInBson.Count; j++)
+                {
+                    var ep = new EndProduct();
+                    ep.Title = bsonList[i].ThreadsInBson[j].Title;
+                    ep.Comments = bsonList[i].ThreadsInBson[j].Comments;
+                    epList.Add(ep);
+                }
+                jsonThList.Add(th);
+                th.Threads = epList;
+                json.threadWrapper = th;
+                jsonList.Add(json);
+            }
+            return jsonThList;
+        }
+
+        public async Task<Threads> GetThreads(string id)
+        {
+            var bson = await _threadRepo.GetThreads(id);
+            var json = new Threads();
+
+            for (int i = 0; i < bson.ThreadsInBson.Count; i++)
+            {
+                json.threadWrapper.Threads[i].Title = bson.ThreadsInBson[i].Title;
+                json.threadWrapper.Threads[i].Comments = bson.ThreadsInBson[i].Comments;
+            }
+            if (json == null)
+            {
+                return null;
+            }
+            return json;
+        }
+
+        private async Task<bool> ThreadExists()
+        {
+            using var client = new HttpClient();
+            var threadLink = "https://localhost:44379/api/RedditThreads/1";
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, threadLink);
+            HttpResponseMessage response = await client.SendAsync(request);
+            if (response == null)
+            {
+                return false;
+            }
+            return true;
+        }
+        private async Task<Threads> GetTopThreads()
         {
             var token = await GetToken();
             var threads = await GetThreadsAsync(token);
@@ -119,11 +210,12 @@ namespace RedditApi.Controllers
             }
         }
 
-        private ThreadWrapper ReturnProducts(List<Product> list)
+        private Threads ReturnProducts(List<Product> list)
         {
             try
             {
-                var result = new ThreadWrapper();
+                var wrap = new ThreadWrapper();
+                var result = new Threads();
                 List<EndProduct> endProducts = new List<EndProduct>();
                 foreach (var item in list)
                 {
@@ -141,8 +233,9 @@ namespace RedditApi.Controllers
                     {
                         results.Add(product);
                     }
-                    result.Threads = results;
+                    wrap.Threads = results;
                 }
+                result.threadWrapper = wrap;
                 return result;
             }
             catch (Exception)
