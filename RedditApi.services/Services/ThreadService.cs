@@ -58,16 +58,20 @@ namespace RedditApi.Services
             }
         }
 
-        public void Delete(string id)
+        public async void Delete(string id)
         {
             try
             {
                 _logger.LogInformation("Deleting Threads List by ID: {id}", id);
-                _threadRepo.RemoveThreads(id);
+                await _threadRepo.RemoveThreads(id);
+                if (_threadRepo.GetThreads(id) == null)
+                {
+                    _logger.LogError("Failed To Delete Object From Database.");
+                }
             }
             catch (Exception e)
             {
-                _logger.LogError("Failed To Delete Object From Database. {e}", e);
+                throw e;
             }
         }
 
@@ -80,17 +84,24 @@ namespace RedditApi.Services
                 var jsonList = new List<Threads>();
                 var jsonThList = new List<ThreadWrapper>();
 
+                if (bsonList.Count == 0)
+                {
+                    var list = new List<ThreadWrapper>();
+                    list.Add(await AddThreads());
+                    return list;
+                }
+                
                 for (int i = 0; i < bsonList.Count; i++)
                 {
                     if (await ThreadExists(bsonList[i].Id))
                     {
                         TimeSpan ts = DateTime.Now.ToLocalTime() - bsonList[i].UpdatedOn.ToLocalTime();
-                        if (ts.TotalMinutes < 5)
+                        if (ts.TotalMinutes < 5 || bsonList != null)
                         {
                             var json = new Threads();
                             var th = new ThreadWrapper();
                             var epList = new List<EndProduct>();
-                            for (int j = 0; j < bsonList[i].ThreadsInBson.Count; j++)
+                            for (int j = 0; j < 5; j++)
                             {
                                 var ep = new EndProduct();
                                 ep.Title = bsonList[i].ThreadsInBson[j].Title;
@@ -115,7 +126,7 @@ namespace RedditApi.Services
             }
             catch (Exception e)
             {
-                _logger.LogError("Failed To Get All Thread Lists And Update If Needed. {e}", e);
+                _logger.LogCritical("Failed To Get All Thread Lists And Update If Needed. {e}", e);
                 throw;
             }
         }
@@ -129,22 +140,30 @@ namespace RedditApi.Services
                 var json = new Threads();
                 var threadW = new ThreadWrapper();
                 var list = new List<EndProduct>();
-
-                for (int i = 0; i < bson.ThreadsInBson.Count; i++)
+                if (bson != null)
                 {
-                    var prod = new EndProduct();
-                    prod.Title = bson.ThreadsInBson[i].Title;
-                    prod.Comments = bson.ThreadsInBson[i].Comments;
-                    list.Add(prod);
+                    for (int i = 0; i < 5; i++)
+                    {
+                        var prod = new EndProduct();
+                        prod.Title = bson.ThreadsInBson[i].Title;
+                        prod.Comments = bson.ThreadsInBson[i].Comments;
+                        list.Add(prod);
+                    }
+                    threadW.Threads = list;
+                    json.ThreadWrapper = threadW;
+                    json.UpdatedOn = bson.UpdatedOn;
+                    return json;
                 }
-                threadW.Threads = list;
-                json.ThreadWrapper = threadW;
-                json.UpdatedOn = bson.UpdatedOn;
-                return json;
+                else
+                {
+                    _logger.LogWarning("Threads Not Found In Database");
+                    return null;
+                }
+                
             }
             catch (Exception e)
             {
-                _logger.LogWarning("Failed To Aquire Threads List From Database. {e}", e);
+                _logger.LogCritical("Failed To Aquire Threads List From Database. {e}", e);
                 throw;
             }
         }
@@ -188,7 +207,7 @@ namespace RedditApi.Services
             }
             catch (Exception)
             {
-                _logger.LogError("Failed To Aquire Tokken For Reddit Registration");
+                _logger.LogCritical("Failed To Aquire Tokken For Reddit Registration");
                 throw;
             }
         }
@@ -218,7 +237,7 @@ namespace RedditApi.Services
             }
             catch (Exception)
             {
-                _logger.LogError("Failed To Return Title & Subreddit From Reddit");
+                _logger.LogCritical("Failed To Return Title & Subreddit From Reddit");
                 throw;
             }
         }
@@ -262,7 +281,7 @@ namespace RedditApi.Services
             }
             catch (Exception)
             {
-                _logger.LogError("Failed To Return Comments From Reddit");
+                _logger.LogCritical("Failed To Return Comments From Reddit");
                 throw;
             }
         }
@@ -297,7 +316,7 @@ namespace RedditApi.Services
             }
             catch (Exception)
             {
-                _logger.LogError("Failed To Return Product From Reddit");
+                _logger.LogCritical("Failed To Return Product From Reddit");
                 throw;
             }
         }

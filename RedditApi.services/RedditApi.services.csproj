@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -11,8 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RedditApi.Core\RedditApi.core.csproj" />
-    <ProjectReference Include="..\RedditApi.data\RedditApi.data.csproj" />
+    <ProjectReference Include="..\RedditApi.Core\RedditApi.Core.csproj" />
+    <ProjectReference Include="..\RedditApi.data\RedditApi.Data.csproj" />
   </ItemGroup>
 
 </Project>

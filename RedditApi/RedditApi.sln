@@ -5,11 +5,11 @@ VisualStudioVersion = 16.0.29519.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditApi", "RedditApi.csproj", "{384B7E23-E8A9-40E4-874F-F2E109A3F751}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditApi.core", "..\RedditApi.Core\RedditApi.core.csproj", "{279B4C55-A5F1-482F-8118-890BDEA82F54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditApi.Core", "..\RedditApi.Core\RedditApi.Core.csproj", "{279B4C55-A5F1-482F-8118-890BDEA82F54}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditApi.data", "..\RedditApi.data\RedditApi.data.csproj", "{5901C20A-50C7-40EC-B588-55082FBC1079}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditApi.Data", "..\RedditApi.data\RedditApi.Data.csproj", "{5901C20A-50C7-40EC-B588-55082FBC1079}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditApi.services", "..\RedditApi.services\RedditApi.services.csproj", "{84FFBB8F-C436-42FB-AEB8-88857772F51F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditApi.Services", "..\RedditApi.services\RedditApi.Services.csproj", "{84FFBB8F-C436-42FB-AEB8-88857772F51F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

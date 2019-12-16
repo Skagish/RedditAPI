@@ -15,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RedditApi.data\RedditApi.data.csproj" />
-    <ProjectReference Include="..\RedditApi.services\RedditApi.services.csproj" />
+    <ProjectReference Include="..\RedditApi.data\RedditApi.Data.csproj" />
+    <ProjectReference Include="..\RedditApi.services\RedditApi.Services.csproj" />
   </ItemGroup>
 
 
