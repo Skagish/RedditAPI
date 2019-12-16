@@ -1,8 +1,4 @@
 ﻿using RedditApi.Models.IRepo;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RedditApi.Repositories
 {

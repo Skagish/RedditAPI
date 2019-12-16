@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using RedditApi.Models;
 using RedditApi.Models.BsonModels;
 
 namespace RedditApi.Repositories

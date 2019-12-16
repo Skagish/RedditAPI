@@ -1,13 +1,14 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using Newtonsoft.Json;
 using System;
 
 namespace RedditApi.Models
 {
     public class Threads
     {
-        [BsonElement("threadsList")]
-        public ThreadWrapper threadWrapper { get; set; }
+        [JsonProperty(PropertyName = "threadsList")]
+        public ThreadWrapper ThreadWrapper { get; set; }
 
         [BsonDateTimeOptions]
         // attribute to gain control on datetime serialization

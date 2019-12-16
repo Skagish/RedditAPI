@@ -1,23 +1,24 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Newtonsoft.Json;
-using RedditApi.Models;
 using RedditApi.Models.BsonModels;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace RedditApi.Repositories
 {
-   
+
     public class ThreadRepository : IThreadRepository
     {
         private readonly RedditContext _context = null;
-        public ThreadRepository(IOptions<RedditDbSettings> settings)
+        private readonly ILogger _logger;
+        public ThreadRepository(IOptions<RedditDbSettings> settings, ILogger<ThreadRepository> logger)
         {
             _context = new RedditContext(settings);
+            _logger = logger;
         }
 
         public async Task AddThreads(ThreadsInBsonWrapper item)
@@ -28,8 +29,8 @@ namespace RedditApi.Repositories
             }
             catch (Exception ex)
             {
-                //manage the exception
-                throw ex;
+                _logger.LogError("Failed To Add Object From Database. {ex}", ex);
+                throw;
             }
         }
 
@@ -42,8 +43,8 @@ namespace RedditApi.Repositories
             }
             catch (Exception ex)
             {
-                //manage the exception
-                throw ex;
+                _logger.LogError("Failed To Get Objects From Database. {ex}", ex);
+                throw;
             }
         }
 
@@ -53,13 +54,13 @@ namespace RedditApi.Repositories
             {
                 ObjectId internalId = GetInternalId(id);
                 return await _context.ThreadsInBson
-                                .Find(thread => thread.InternalId == internalId)
+                                .Find(thread => thread.Id == id)
                                 .FirstOrDefaultAsync();
             }
             catch (Exception ex)
             {
-                //manage the exception
-                throw ex;
+                _logger.LogError("Failed To Get Object From Database. {ex}", ex);
+                throw;
             }
         }
 
@@ -74,8 +75,8 @@ namespace RedditApi.Repositories
             }
             catch (Exception ex)
             {
-                //manage the exception
-                throw ex;
+                _logger.LogError("Failed To Get Find Object From Database. {ex}", ex);
+                throw;
             }
         }
 
@@ -103,13 +104,16 @@ namespace RedditApi.Repositories
                 DeleteResult actionResult
                     = await _context.ThreadsInBson.DeleteOneAsync(
                         Builders<ThreadsInBsonWrapper>.Filter.Eq("Id", id));
-
-                return actionResult.IsAcknowledged
+                if (await GetThreads(id) == null)
+                {
+                    return actionResult.IsAcknowledged
                     && actionResult.DeletedCount > 0;
+                }
+                return actionResult.IsAcknowledged;
             }
             catch (Exception ex)
             {
-                //manage the exception
+                _logger.LogError("Failed To Delete Object From Database. {ex}", ex);
                 throw ex;
             }
         }

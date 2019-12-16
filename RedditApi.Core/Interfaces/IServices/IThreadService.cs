@@ -9,7 +9,7 @@ namespace RedditApi.core.Interfaces.IServices
     {
         Task<List<ThreadWrapper>> GetAllThreads();
         Task<Threads> GetThreads(string id);
-        void AddThreads();
+        Task<ThreadWrapper> AddThreads();
         void Delete(string id);
     }
 }

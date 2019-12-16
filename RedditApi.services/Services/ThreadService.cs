@@ -2,7 +2,6 @@
 using RedditApi.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using RedditApi.Repositories;
 using RedditApi.Models.BsonModels;
 using System;
@@ -11,22 +10,26 @@ using IdentityModel.Client;
 using RedditApi.Models.ThreadingTree;
 using Newtonsoft.Json;
 using RedditApi.Models.CommentTree;
+using Microsoft.Extensions.Logging;
 
 namespace RedditApi.Services
 {
     public class ThreadService : IThreadService
     {
         private readonly IThreadRepository _threadRepo;
+        private readonly ILogger _logger;
 
-        public ThreadService(IThreadRepository threadRepository)
+        public ThreadService(IThreadRepository threadRepo, ILogger<ThreadService> logger)
         {
-            _threadRepo = threadRepository;
+            _threadRepo = threadRepo;
+            _logger = logger;
         }
-        public async void AddThreads()
+        public async Task<ThreadWrapper> AddThreads()
         {
             try
             {
-                if (await ThreadExists())
+                _logger.LogInformation("Adding Threads to DataBase");
+                if (await ThreadExists("1"))
                 {
                     await _threadRepo.RemoveThreads("1");
                 }
@@ -38,74 +41,117 @@ namespace RedditApi.Services
                 for (int i = 0; i < 5; i++)
                 {
                     var wrap = new ThreadsInBson();
-                    wrap.Title = json.threadWrapper.Threads[i].Title;
-                    wrap.Comments = json.threadWrapper.Threads[i].Comments;
+                    wrap.Title = json.ThreadWrapper.Threads[i].Title;
+                    wrap.Comments = json.ThreadWrapper.Threads[i].Comments;
                     bsonList.Add(wrap);
                 }
                 bson.Id = "1";
                 bson.ThreadsInBson = bsonList;
                 await _threadRepo.AddThreads(bson);
+                _logger.LogInformation("Added Threads to DataBase");
+                return json.ThreadWrapper;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                _logger.LogError("Failed To Add Object To Database. {e}", e);
                 throw;
             }
         }
 
         public void Delete(string id)
         {
-            _threadRepo.RemoveThreads(id);
+            try
+            {
+                _logger.LogInformation("Deleting Threads List by ID: {id}", id);
+                _threadRepo.RemoveThreads(id);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Failed To Delete Object From Database. {e}", e);
+            }
         }
 
         public async Task<List<ThreadWrapper>> GetAllThreads()
         {
-            var bsonList = await _threadRepo.GetAllThreads();
-            var jsonList = new List<Threads>();
-            var jsonThList = new List<ThreadWrapper>();
-
-            for (int i = 0; i < bsonList.Count; i++)
+            try
             {
-                var json = new Threads();
-                var th = new ThreadWrapper();
-                var epList = new List<EndProduct>();
-                for (int j = 0; j < bsonList[i].ThreadsInBson.Count; j++)
+                _logger.LogInformation("Returning All Thread Lists");
+                var bsonList = await _threadRepo.GetAllThreads();
+                var jsonList = new List<Threads>();
+                var jsonThList = new List<ThreadWrapper>();
+
+                for (int i = 0; i < bsonList.Count; i++)
                 {
-                    var ep = new EndProduct();
-                    ep.Title = bsonList[i].ThreadsInBson[j].Title;
-                    ep.Comments = bsonList[i].ThreadsInBson[j].Comments;
-                    epList.Add(ep);
+                    if (await ThreadExists(bsonList[i].Id))
+                    {
+                        TimeSpan ts = DateTime.Now.ToLocalTime() - bsonList[i].UpdatedOn.ToLocalTime();
+                        if (ts.TotalMinutes < 5)
+                        {
+                            var json = new Threads();
+                            var th = new ThreadWrapper();
+                            var epList = new List<EndProduct>();
+                            for (int j = 0; j < bsonList[i].ThreadsInBson.Count; j++)
+                            {
+                                var ep = new EndProduct();
+                                ep.Title = bsonList[i].ThreadsInBson[j].Title;
+                                ep.Comments = bsonList[i].ThreadsInBson[j].Comments;
+                                epList.Add(ep);
+                            }
+                            jsonThList.Add(th);
+                            th.Threads = epList;
+                            json.ThreadWrapper = th;
+                            jsonList.Add(json);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Updating Threads List");
+                            var list = new List<ThreadWrapper>();
+                            list.Add(await AddThreads());
+                            return list;
+                        }
+                    }
                 }
-                jsonThList.Add(th);
-                th.Threads = epList;
-                json.threadWrapper = th;
-                jsonList.Add(json);
+                return jsonThList;
             }
-            return jsonThList;
+            catch (Exception e)
+            {
+                _logger.LogError("Failed To Get All Thread Lists And Update If Needed. {e}", e);
+                throw;
+            }
         }
 
         public async Task<Threads> GetThreads(string id)
         {
-            var bson = await _threadRepo.GetThreads(id);
-            var json = new Threads();
+            try
+            {
+                _logger.LogInformation("Returning Threads List by ID: {id}", id);
+                var bson = await _threadRepo.GetThreads(id);
+                var json = new Threads();
+                var threadW = new ThreadWrapper();
+                var list = new List<EndProduct>();
 
-            for (int i = 0; i < bson.ThreadsInBson.Count; i++)
-            {
-                json.threadWrapper.Threads[i].Title = bson.ThreadsInBson[i].Title;
-                json.threadWrapper.Threads[i].Comments = bson.ThreadsInBson[i].Comments;
+                for (int i = 0; i < bson.ThreadsInBson.Count; i++)
+                {
+                    var prod = new EndProduct();
+                    prod.Title = bson.ThreadsInBson[i].Title;
+                    prod.Comments = bson.ThreadsInBson[i].Comments;
+                    list.Add(prod);
+                }
+                threadW.Threads = list;
+                json.ThreadWrapper = threadW;
+                json.UpdatedOn = bson.UpdatedOn;
+                return json;
             }
-            if (json == null)
+            catch (Exception e)
             {
-                return null;
+                _logger.LogWarning("Failed To Aquire Threads List From Database. {e}", e);
+                throw;
             }
-            return json;
         }
 
-        private async Task<bool> ThreadExists()
+        private async Task<bool> ThreadExists(string id)
         {
-            using var client = new HttpClient();
-            var threadLink = "https://localhost:44379/api/RedditThreads/1";
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, threadLink);
-            HttpResponseMessage response = await client.SendAsync(request);
+            var response = await GetThreads(id);
             if (response == null)
             {
                 return false;
@@ -114,6 +160,7 @@ namespace RedditApi.Services
         }
         private async Task<Threads> GetTopThreads()
         {
+            _logger.LogInformation("Returning Top Threads From Reddit");
             var token = await GetToken();
             var threads = await GetThreadsAsync(token);
             var comments = await GetCommentsAsync(token, threads);
@@ -123,19 +170,27 @@ namespace RedditApi.Services
 
         private async Task<string> GetToken()
         {
-            using var client = new HttpClient();
-            var response = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+            try
             {
-                Address = "https://www.reddit.com/api/v1/access_token",
-                ClientCredentialStyle = ClientCredentialStyle.AuthorizationHeader,
-                ClientId = "uCVrtPfI3OOkyQ",
-                ClientSecret = "EYfI97NNVmMRXncS9NyYGPnAsUg",
-                GrantType = "client_credentials",
-                Scope = "read"
-            });
-            if (response.IsError) throw new Exception(response.Error);
-            var token = response.AccessToken;
-            return token;
+                using var client = new HttpClient();
+                var response = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+                {
+                    Address = "https://www.reddit.com/api/v1/access_token",
+                    ClientCredentialStyle = ClientCredentialStyle.AuthorizationHeader,
+                    ClientId = "uCVrtPfI3OOkyQ",
+                    ClientSecret = "EYfI97NNVmMRXncS9NyYGPnAsUg",
+                    GrantType = "client_credentials",
+                    Scope = "read"
+                });
+                if (response.IsError) throw new Exception(response.Error);
+                var token = response.AccessToken;
+                return token;
+            }
+            catch (Exception)
+            {
+                _logger.LogError("Failed To Aquire Tokken For Reddit Registration");
+                throw;
+            }
         }
 
         private async Task<ICollection<Product>> GetThreadsAsync(string token)
@@ -163,6 +218,7 @@ namespace RedditApi.Services
             }
             catch (Exception)
             {
+                _logger.LogError("Failed To Return Title & Subreddit From Reddit");
                 throw;
             }
         }
@@ -206,6 +262,7 @@ namespace RedditApi.Services
             }
             catch (Exception)
             {
+                _logger.LogError("Failed To Return Comments From Reddit");
                 throw;
             }
         }
@@ -235,11 +292,12 @@ namespace RedditApi.Services
                     }
                     wrap.Threads = results;
                 }
-                result.threadWrapper = wrap;
+                result.ThreadWrapper = wrap;
                 return result;
             }
             catch (Exception)
             {
+                _logger.LogError("Failed To Return Product From Reddit");
                 throw;
             }
         }

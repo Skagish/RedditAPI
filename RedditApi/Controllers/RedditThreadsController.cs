@@ -24,16 +24,18 @@ namespace RedditApi.Controllers
 
         // GET: api/RedditThreads/5
         [HttpGet("{id}", Name = "Get")]
-        public async Task<Threads> GetThreads(string id)
+        public async Task<ThreadWrapper> GetThreads(string id)
         {
-            return await _threadService.GetThreads(id);
+            var th = await _threadService.GetThreads(id);
+            return th.ThreadWrapper;
+
         }
 
         // POST: api/RedditThreads
         [HttpPost]
         public async Task<IActionResult> AddThreads()
         {
-            _threadService.AddThreads();
+            await _threadService.AddThreads();
             return Ok();
         }
 

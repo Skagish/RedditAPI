@@ -1,8 +1,6 @@
-﻿using RedditApi.Models;
-using RedditApi.Models.BsonModels;
+﻿using RedditApi.Models.BsonModels;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace RedditApi.Repositories
