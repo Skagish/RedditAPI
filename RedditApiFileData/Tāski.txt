@@ -1,0 +1,10 @@
+todo:
+ * private metodes @controller 			| DONE |
+ * izņemt liekos kontrolierus/metodes	| DONE |
+ * lieks catch bloks					| DONE |
+ * izsaukt dispose						| DONE |
+ * Nodalīt modeļus						| DONE |
+ * Laika pārbaude un update				| DONE |
+ * thread exists pa taisno uz db		| DONE |
+ * reddit config in appsettings.json	| DONE |
+ * žurnalēšanu Nlog, JsonConfig, provid	| DONE 75% |

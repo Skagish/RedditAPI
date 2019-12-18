@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using RedditApi.core.Interfaces.IServices;
@@ -24,10 +25,18 @@ namespace RedditApi.Controllers
 
         // GET: api/RedditThreads/5
         [HttpGet("{id}", Name = "Get")]
-        public async Task<ThreadWrapper> GetThreads(string id)
+        public async Task<IActionResult> GetThreads(string id)
         {
-            var th = await _threadService.GetThreads(id);
-            return th.ThreadWrapper;
+
+            var threads = await _threadService.GetThreads(id);
+            if (threads == null)
+            {
+                return NotFound($"Object Does not Exist With ID : {id}");
+            }
+            else
+            {
+                return Ok(threads);
+            }
 
         }
 

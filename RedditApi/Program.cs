@@ -1,12 +1,20 @@
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NLog;
+using NLog.Extensions.Logging;
+using NLog.Web;
+using NLog.Web.AspNetCore;
+using RedditApi.Services;
+using System;
 
 namespace RedditApi
 {
     public class Program
     {
-        public static void Main(string[] args)
+        static void Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();
         }
@@ -16,13 +24,12 @@ namespace RedditApi
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    
+
                 }).ConfigureLogging(logging =>
                 {
-                    logging.ClearProviders();
-                    logging.AddConsole();
-                });
-
-        
+                    logging.AddNLog()
+                    .AddFilter("Microsoft.AspNetCore", Microsoft.Extensions.Logging.LogLevel.Warning);
+                }).UseNLog();
     }
 }
+
