@@ -9,9 +9,6 @@ using RedditApi.Models.IRepo;
 using RedditApi.Repositories;
 using RedditApi.Services;
 using Microsoft.Extensions.Logging;
-using NLog;
-using ILogger = NLog.ILogger;
-using RedditApi.Services.Services;
 
 namespace RedditApi
 {
@@ -29,10 +26,8 @@ namespace RedditApi
         {
             services.Configure<RedditDbSettings>(
                 Configuration.GetSection(nameof(RedditDbSettings)));
-            services.AddTransient<IMyLogger, MyLogger>();
             services.AddSingleton<IRedditDbSettings>(sp =>
                 sp.GetRequiredService<IOptions<RedditDbSettings>>().Value);
-            services.AddSingleton<MyLogger>();
             services.AddSingleton<ThreadService>();
             services.AddTransient<IThreadRepository, ThreadRepository>();
             services.AddTransient<IThreadService, ThreadService>();
@@ -43,7 +38,7 @@ namespace RedditApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, ILoggerProvider provider)
         {
-            loggerFactory.AddProvider(provider);
+            
 
             if (env.IsDevelopment())
             {

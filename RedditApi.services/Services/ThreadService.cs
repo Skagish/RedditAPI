@@ -10,16 +10,16 @@ using IdentityModel.Client;
 using RedditApi.Models.ThreadingTree;
 using Newtonsoft.Json;
 using RedditApi.Models.CommentTree;
-using RedditApi.Services.Services;
+using Microsoft.Extensions.Logging;
 
 namespace RedditApi.Services
 {
     public class ThreadService : IThreadService
     {
         private readonly IThreadRepository _threadRepo;
-        private readonly IMyLogger _logger;
+        private readonly ILogger<ThreadService> _logger;
 
-        public ThreadService(IThreadRepository threadRepo, IMyLogger logger)
+        public ThreadService(IThreadRepository threadRepo, ILogger<ThreadService> logger)
         {
             _threadRepo = threadRepo;
             _logger = logger;
@@ -29,7 +29,7 @@ namespace RedditApi.Services
         {
             try
             {
-                _logger.Logger().Info("Adding Object to DataBase");
+                _logger.LogInformation("Adding Object to DataBase");
                 if (await ThreadExists("1"))
                 {
                     await _threadRepo.RemoveThreads("1");
@@ -49,12 +49,12 @@ namespace RedditApi.Services
                 bson.Id = "1";
                 bson.ThreadsInBson = bsonList;
                 await _threadRepo.AddThreads(bson);
-                _logger.Logger().Info("Added Object to DataBase");
+                _logger.LogInformation("Added Object to DataBase");
                 return json.ThreadWrapper;
             }
             catch (Exception e)
             {
-                _logger.Logger().Fatal(e, "Failed To Communicate To Database.");
+                _logger.LogCritical(e, "Failed To Communicate To Database.");
                 throw;
             }
         }
@@ -63,16 +63,16 @@ namespace RedditApi.Services
         {
             try
             {
-                _logger.Logger().Info("Deleting Threads List by ID: {id}", id);
+                _logger.LogInformation("Deleting Threads List by ID: {id}", id);
                 await _threadRepo.RemoveThreads(id);
                 if (_threadRepo.GetThreads(id) == null)
                 {
-                    _logger.Logger().Warn("Failed To Delete Object From Database.");
+                    _logger.LogWarning("Failed To Delete Object From Database.");
                 }
             }
             catch (Exception e)
             {
-                _logger.Logger().Fatal(e, "Failed To Communicate To Database. {e}");
+                _logger.LogCritical(e, "Failed To Communicate To Database. {e}");
 
                 throw e;
             }
@@ -82,7 +82,7 @@ namespace RedditApi.Services
         {
             try
             {
-                _logger.Logger().Info("Returning All Threads Lists");
+                _logger.LogInformation("Returning All Threads Lists");
                 var bsonList = await _threadRepo.GetAllThreads();
                 var jsonList = new List<Threads>();
                 var jsonThList = new List<ThreadWrapper>();
@@ -118,7 +118,7 @@ namespace RedditApi.Services
                         }
                         else
                         {
-                            _logger.Logger().Info("Updating Threads List");
+                            _logger.LogInformation("Updating Threads List");
                             var list = new List<ThreadWrapper>();
                             list.Add(await AddThreads());
                             return list;
@@ -129,7 +129,7 @@ namespace RedditApi.Services
             }
             catch (Exception e)
             {
-                _logger.Logger().Fatal(e, "Failed To Get All Thread Lists And Update If Needed. {e}");
+                _logger.LogCritical("Failed To Get All Thread Lists And Update If Needed. {e}", e);
                 throw;
             }
         }
@@ -138,7 +138,7 @@ namespace RedditApi.Services
         {
             try
             {
-                _logger.Logger().Info("Returning Threads List by ID: {id}", id);
+                _logger.LogInformation("Returning Threads List by ID: {id}", id);
                 var bson = await _threadRepo.GetThreads(id);
                 var json = new Threads();
                 var threadW = new ThreadWrapper();
@@ -159,14 +159,14 @@ namespace RedditApi.Services
                 }
                 else
                 {
-                    _logger.Logger().Warn("Object Not Found In Database");
+                    _logger.LogWarning("Object Not Found In Database");
                     return null;
                 }
 
             }
             catch (Exception e)
             {
-                _logger.Logger().Fatal(e, "Failed To Aquire Response List From Database. {e}");
+                _logger.LogCritical("Failed To Aquire Response List From Database. {e}", e);
                 throw;
             }
         }
@@ -182,7 +182,7 @@ namespace RedditApi.Services
         }
         private async Task<Threads> GetTopThreads()
         {
-            _logger.Logger().Info("Returning Top Threads From Reddit");
+            _logger.LogInformation("Returning Top Threads From Reddit");
             var token = await GetToken();
             var threads = await GetThreadsAsync(token);
             var comments = await GetCommentsAsync(token, threads);
@@ -210,7 +210,7 @@ namespace RedditApi.Services
             }
             catch (Exception)
             {
-                _logger.Logger().Fatal("Failed To Aquire Tokken For Reddit Registration");
+                _logger.LogCritical("Failed To Aquire Tokken For Reddit Registration");
                 throw;
             }
         }
@@ -240,7 +240,7 @@ namespace RedditApi.Services
             }
             catch (Exception)
             {
-                _logger.Logger().Fatal("Failed To Return Title & Subreddit From Reddit");
+                _logger.LogCritical("Failed To Return Title & Subreddit From Reddit");
                 throw;
             }
         }
@@ -284,7 +284,7 @@ namespace RedditApi.Services
             }
             catch (Exception)
             {
-                _logger.Logger().Fatal("Failed To Return Comments From Reddit");
+                _logger.LogCritical("Failed To Return Comments From Reddit");
                 throw;
             }
         }
@@ -319,7 +319,7 @@ namespace RedditApi.Services
             }
             catch (Exception)
             {
-                _logger.Logger().Fatal("Failed To Return Product From Reddit");
+                _logger.LogCritical("Failed To Return Product From Reddit");
                 throw;
             }
         }

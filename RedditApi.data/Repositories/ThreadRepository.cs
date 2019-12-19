@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Newtonsoft.Json;
 using RedditApi.Models.BsonModels;
-using RedditApi.Services.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,8 +14,8 @@ namespace RedditApi.Repositories
     public class ThreadRepository : IThreadRepository
     {
         private readonly RedditContext _context = null;
-        private readonly IMyLogger _logger;
-        public ThreadRepository(IOptions<RedditDbSettings> settings, IMyLogger logger)
+        private readonly ILogger<ThreadRepository> _logger;
+        public ThreadRepository(IOptions<RedditDbSettings> settings, ILogger<ThreadRepository> logger)
         {
             _context = new RedditContext(settings);
             _logger = logger;
@@ -29,7 +29,7 @@ namespace RedditApi.Repositories
             }
             catch (Exception ex)
             {
-                _logger.Logger().Error(ex, "Failed To Add Object From Database. {ex}");
+                _logger.LogError("Failed To Add Object From Database. {ex}", ex);
                 throw;
             }
         }
@@ -43,7 +43,7 @@ namespace RedditApi.Repositories
             }
             catch (Exception ex)
             {
-                _logger.Logger().Error(ex, "Failed To Get Objects From Database. {ex}");
+                _logger.LogError("Failed To Get Objects From Database. {ex}", ex);
                 throw;
             }
         }
@@ -58,7 +58,7 @@ namespace RedditApi.Repositories
                                 .FirstOrDefaultAsync();
                 if (thread == null)
                 {
-                    _logger.Logger().Warn("Object Does Not Exist Or Has Been Deleted From Database");
+                    _logger.LogWarning("Object Does Not Exist Or Has Been Deleted From Database");
                     return null;
                 }
                 else
@@ -83,7 +83,7 @@ namespace RedditApi.Repositories
             }
             catch (Exception ex)
             {
-                _logger.Logger().Error(ex, "Failed To Get Find Object From Database. {ex}");
+                _logger.LogError("Failed To Get Find Object From Database. {ex}", ex);
                 throw;
             }
         }
@@ -121,7 +121,7 @@ namespace RedditApi.Repositories
             }
             catch (Exception ex)
             {
-                _logger.Logger().Error(ex, "Failed To Delete Object From Database. {ex}");
+                _logger.LogError("Failed To Delete Object From Database. {ex}", ex);
                 throw ex;
             }
         }

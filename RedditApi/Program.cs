@@ -1,14 +1,10 @@
-﻿using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Extensions.Logging;
 using NLog.Web;
-using NLog.Web.AspNetCore;
-using RedditApi.Services;
-using System;
 
 namespace RedditApi
 {
@@ -16,6 +12,13 @@ namespace RedditApi
     {
         static void Main(string[] args)
         {
+            var config = new ConfigurationBuilder()
+                   .SetBasePath(System.IO.Directory.GetCurrentDirectory())
+                   .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                   .Build();
+
+            LogManager.Configuration = new NLogLoggingConfiguration(config.GetSection("NLog"));
+
             CreateHostBuilder(args).Build().Run();
         }
 
@@ -27,8 +30,9 @@ namespace RedditApi
 
                 }).ConfigureLogging(logging =>
                 {
-                    logging.AddNLog()
-                    .AddFilter("Microsoft.AspNetCore", Microsoft.Extensions.Logging.LogLevel.Warning);
+                    logging.ClearProviders();
+
+                    logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
                 }).UseNLog();
     }
 }
