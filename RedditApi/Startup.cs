@@ -25,6 +25,15 @@ namespace RedditApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<RedditDbSettings>(
+              options =>
+              {
+                  options.ConnectionString = Configuration.GetSection("RedditDbSettings:ConnectionString").Value;
+                  options.DatabaseName = Configuration.GetSection("RedditDbSettings:Database").Value;
+                  options.Container = Configuration.GetSection("RedditDbSettings:Container").Value;
+                  //options.IsContained = Configuration["DOTNET_RUNNING_IN_CONTAINER"] != null;
+              });
+
+            services.Configure<RedditDbSettings>(
                 Configuration.GetSection(nameof(RedditDbSettings)));
             services.AddSingleton<IRedditDbSettings>(sp =>
                 sp.GetRequiredService<IOptions<RedditDbSettings>>().Value);
@@ -38,7 +47,7 @@ namespace RedditApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, ILoggerProvider provider)
         {
-            
+
 
             if (env.IsDevelopment())
             {
